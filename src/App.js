@@ -4,6 +4,7 @@ import axios from 'axios';
 function App() {
     const [data, setData] = useState({});
     const [location, setLocation] = useState('');
+    const [currentLocation, setCurrentLocation] = useState('');
 
     const url = `https://api.openweathermap.org/data/2.5/weather?q=${location}&appid=a39680dbbd4ddb6588211bfd2960858a&units=metric`;
     const locationUrl = 'http://ip-api.com/csv/?fields=city';
@@ -14,14 +15,15 @@ function App() {
 
     const getCurrentLocationWeather = () => {
         axios.get(locationUrl).then((response) => {
+            setCurrentLocation(response.data);
             getWeather(response.data);
         })
     }
 
-    function getWeather (locationW) {
-            axios.get(`https://api.openweathermap.org/data/2.5/weather?q=${locationW}&appid=a39680dbbd4ddb6588211bfd2960858a&units=metric`).then((response) => {
-                setData(response.data);
-            })
+    function getWeather(locationW) {
+        axios.get(`https://api.openweathermap.org/data/2.5/weather?q=${locationW}&appid=a39680dbbd4ddb6588211bfd2960858a&units=metric`).then((response) => {
+            setData(response.data);
+        })
     }
 
     const searchLocation = (event) => {
@@ -37,8 +39,13 @@ function App() {
     return (
         <div className="app">
             <div className="search">
-                <input value={location} onChange={event => setLocation(event.target.value)} onKeyPress={searchLocation}
-                       type="text" placeholder='Enter Location' spellCheck="false"/>
+                <div className="buttonInput">
+                    <input value={location} onChange={event => setLocation(event.target.value)} onKeyPress={searchLocation}
+                           type="text" placeholder='Enter Location' spellCheck="false"/>
+                    <button onClick={() => getWeather(currentLocation)}>
+                        <img src="https://i.imgur.com/M6vA08E.png" alt={'locate-me'}/>
+                    </button>
+                </div>
                 <div className="forecast_choice">
                     <button onClick={() => getWeather(location)} id='btn'>Current</button>
                     <button>24 hours</button>
