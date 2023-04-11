@@ -35,7 +35,7 @@ Method: `GET`
 
 APIs used:
 * `https://openweathermap.org/api`    
-* `http://ip-api.com/csv/?fields=city`
+* `https://api.ip2loc.com`
 
 ## 🚀 Running on your device
 
