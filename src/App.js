@@ -9,9 +9,35 @@ function App() {
     const [favoriteTowns, setFavoriteTowns] = useState([]);
     const [showFavoriteTowns, setShowFavoriteTowns] = useState(false);
     const [currentForecast, setCurrentForecast] = useState('');
+    const [invalidInput, setInvalidInput] = useState(false);
+    const [weather, setWeather] = useState('');
 
     const url = `https://api.openweathermap.org/data/2.5/weather?q=${location}&appid=a39680dbbd4ddb6588211bfd2960858a&units=metric`;
     const locationUrl = 'http://ip-api.com/csv/?fields=city';
+
+    let image;
+    switch (weather) {
+        case 'Clouds':
+            image = 'https://i.imgur.com/HibL0f3.jpg';
+            break;
+        case 'Snow':
+            image = 'https://i.imgur.com/MITY8pC.jpg';
+            break;
+        case 'Rain':
+            image = 'https://i.imgur.com/5QWgbOZ.jpg';
+            break;
+        case 'Clear':
+            image = 'https://i.imgur.com/ERqASoA.jpg';
+            break;
+        case 'Fog':
+            image = 'https://i.imgur.com/7qc9r5r.jpg';
+            break;
+        case 'Mist':
+            image = 'https://i.imgur.com/Bo7yQKC.jpg';
+            break;
+        default:
+            image = 'https://i.imgur.com/H1v1yn5.jpg'
+    }
 
     useEffect(() => {
         setFavoriteTowns(JSON.parse(localStorage.getItem('towns')) || []);
@@ -31,6 +57,7 @@ function App() {
             setData(response.data);
             setCurrentForecast('current');
             setTown(response.data.name);
+            setWeather(response.data.weather[0].main);
         });
     }
 
@@ -54,10 +81,18 @@ function App() {
         if (event.key === 'Enter') {
             event.preventDefault();
             axios.get(url).then((response) => {
+                setInvalidInput(false);
                 setData(response.data);
                 setTown(response.data.name);
                 getWeather(response.data.name);
+            }).catch((error) => {
+                if (error.response.status) {
+                    if (error.response.status === 404) {
+                        setInvalidInput(true);
+                    }
+                }
             })
+            event.currentTarget.value = '';
         }
     }
 
@@ -74,14 +109,25 @@ function App() {
 
     const savedTowns = JSON.parse(localStorage.getItem("towns")) || [];
 
+
     return (
-        <div className="app">
+        <div className="app" style={{
+            backgroundImage: `url(${image})`,
+            backgroundPosition: 'center',
+            backgroundSize: 'cover',
+            backgroundRepeat: 'no-repeat',
+            boxShadow: 'inset 0 0 0 1000px rgba(0, 0, 0, 0.4)'
+
+        }}>
             <div className="search">
                 <div className="inputFavorite">
-                    <input onChange={event => setLocation(event.target.value)}
-                           onKeyPress={searchLocation} type="text"
-                           placeholder='Enter Location' spellCheck="false"/>
-                    <div className="show" onClick={() => setShowFavoriteTowns(true)}>
+                    <input
+                        onChange={event => setLocation(event.target.value.match(/^[A-Za-z]+/) ? event.target.value : null)}
+                        onKeyPress={searchLocation} type="text"
+                        placeholder={invalidInput ? "Try again!" : "Enter Location"} spellCheck="false"
+                        pattern="[a-zA-Z]+" id={invalidInput ? "invalidInput" : ""}/>
+                    <div className="show"
+                         onClick={() => setShowFavoriteTowns(showFavoriteTowns !== true)}>
                         {favoriteTowns.length >= 1 && <p>★</p>}
                     </div>
                 </div>
@@ -132,28 +178,42 @@ function App() {
                             {data.weather ? <p>{data.weather[0].main}</p> : null}
                         </div>
                     </div>}
-                    {currentForecast === 'hourly' && <div className=" detailed_forecast">
+                    {currentForecast === 'hourly' && <div className="detailed_forecast">
                         {weatherData.map((day) => {
                             return <div className="currentDay">
-                                <div className=" day">
-                                    <p>{new Date(day.dt * 1000).toLocaleString('en-US', {weekday: "long"})}</p>
-                                    <p>{new Date(day.dt * 1000).toLocaleTimeString()}</p>
+                                <div className="fullView">
+                                    <div className="day">
+                                        <p>{new Date(day.dt * 1000).toLocaleString('en-US', {weekday: "long"})}</p>
+                                        <p>{new Date(day.dt * 1000).toLocaleTimeString()}</p>
+                                    </div>
+                                    <div className="week_temp">
+                                        <p>Temperature</p>
+                                        <p>{Math.round(day.main.temp_max)}°C</p>
+                                    </div>
+                                    <div className="week_wind">
+                                        <p>Wind</p>
+                                        <p>{Math.round(day.wind.speed)} km/h</p>
+                                    </div>
+                                    <div className="week_humidity">
+                                        <p>Humidity</p>
+                                        <p>{day.main.humidity}%</p>
+                                    </div>
+                                    <div className="week_feels_like">
+                                        <p>Feels Like</p>
+                                        <p>{Math.round(day.main.feels_like)}°C</p>
+                                    </div>
                                 </div>
-                                <div className="week_temp">
-                                    <p>Temperature</p>
-                                    <p>{Math.round(day.main.temp_max)}°C</p>
-                                </div>
-                                <div className="week_wind">
-                                    <p>Wind</p>
-                                    <p>{Math.round(day.wind.speed)} km/h</p>
-                                </div>
-                                <div className="week_humidity">
-                                    <p>Humidity</p>
-                                    <p>{day.main.humidity}%</p>
-                                </div>
-                                <div className="week_feels_like">
-                                    <p>Feels Like</p>
-                                    <p>{Math.round(day.main.feels_like)}°C</p>
+                                <div className="mobileView">
+                                    <div className="day">
+                                        <p>{new Date(day.dt * 1000).toLocaleString('en-US', {weekday: "long"})}</p>
+                                        <p>{new Date(day.dt * 1000).toLocaleTimeString()}</p>
+                                    </div>
+                                    <div>
+                                        <p>Temp: {Math.round(day.main.temp_max)}°C</p>
+                                        <p>Wind: {Math.round(day.wind.speed)} km/h</p>
+                                        <p>Humidity: {day.main.humidity}%</p>
+                                        <p>Feels Like: {Math.round(day.main.feels_like)}°C</p>
+                                    </div>
                                 </div>
                             </div>
                         })
@@ -162,28 +222,45 @@ function App() {
                     {currentForecast === 'daily' && <div className="detailed_forecast">
                         {weatherData.map((day) => {
                             return <div className="currentDay">
-                                <div className="day">
-                                    <p>{new Date(day.dt * 1000).toLocaleString('ro-RO', {
-                                        day: "numeric",
-                                        month: "numeric",
-                                        year: "numeric"
-                                    })}</p>
+                                <div className="fullView">
+                                    <div className="day">
+                                        <p>{new Date(day.dt * 1000).toLocaleString('ro-RO', {
+                                            day: "numeric",
+                                            month: "numeric",
+                                            year: "numeric"
+                                        })}</p>
+                                    </div>
+                                    <div className="week_temp">
+                                        <p>Temperature</p>
+                                        <p>{(day.temp.min).toFixed()}°C / {(day.temp.max).toFixed()}°C</p>
+                                    </div>
+                                    <div className="week_wind">
+                                        <p>Wind</p>
+                                        <p>{(day.speed).toFixed()}km/h</p>
+                                    </div>
+                                    <div className="week_humidity">
+                                        <p>Humidity</p>
+                                        <p>{(day.humidity)}%</p>
+                                    </div>
+                                    <div className="week_feels_like">
+                                        <p>Feels Like</p>
+                                        <p>{(day.feels_like.day).toFixed()}°C</p>
+                                    </div>
                                 </div>
-                                <div className="week_temp">
-                                    <p>Temperature</p>
-                                    <p>{(day.temp.min).toFixed()}°C / {(day.temp.max).toFixed()}°C</p>
-                                </div>
-                                <div className="week_wind">
-                                    <p>Wind</p>
-                                    <p>{(day.speed).toFixed()}km/h</p>
-                                </div>
-                                <div className="week_humidity">
-                                    <p>Humidity</p>
-                                    <p>{(day.humidity)}%</p>
-                                </div>
-                                <div className="week_feels_like">
-                                    <p>Feels Like</p>
-                                    <p>{(day.feels_like.day).toFixed()}°C</p>
+                                <div className="mobileView">
+                                    <div className="day">
+                                        <p>{new Date(day.dt * 1000).toLocaleString('ro-RO', {
+                                            day: "numeric",
+                                            month: "numeric",
+                                            year: "numeric"
+                                        })}</p>
+                                    </div>
+                                    <div className="weatherInfo">
+                                        <p>Temp: {(day.temp.min).toFixed()}°C / {(day.temp.max).toFixed()}°C</p>
+                                        <p>Wind: {(day.speed).toFixed()}km/h</p>
+                                        <p>Humidity: {(day.humidity)}%</p>
+                                        <p>Feels Like: {(day.feels_like.day).toFixed()}°C</p>
+                                    </div>
                                 </div>
                             </div>
                         })
