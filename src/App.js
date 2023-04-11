@@ -13,30 +13,31 @@ function App() {
     const [weather, setWeather] = useState('');
 
     const url = `https://api.openweathermap.org/data/2.5/weather?q=${location}&appid=a39680dbbd4ddb6588211bfd2960858a&units=metric`;
-    const locationUrl = 'http://ip-api.com/csv/?fields=city';
+    const locationUrl = 'https://api.ip2loc.com/AR68TWUJtXNWqi4fyluUdFREvYmLCmg9/detect?include=city';
 
     let image;
+
     switch (weather) {
         case 'Clouds':
-            image = 'https://i.imgur.com/HibL0f3.jpg';
+            image = "./backgrounds/clouds.png";
             break;
         case 'Snow':
-            image = 'https://i.imgur.com/MITY8pC.jpg';
+            image = "./backgrounds/snow.png";
             break;
         case 'Rain':
-            image = 'https://i.imgur.com/5QWgbOZ.jpg';
+            image = "./backgrounds/rain.png";
             break;
         case 'Clear':
-            image = 'https://i.imgur.com/ERqASoA.jpg';
+            image = "./backgrounds/clear.png";
             break;
         case 'Fog':
-            image = 'https://i.imgur.com/7qc9r5r.jpg';
+            image = "./backgrounds/fog.png";
             break;
         case 'Mist':
-            image = 'https://i.imgur.com/Bo7yQKC.jpg';
+            image = "./backgrounds/mist.png";
             break;
         default:
-            image = 'https://i.imgur.com/H1v1yn5.jpg'
+            image = "./backgrounds/default.png";
     }
 
     useEffect(() => {
@@ -47,8 +48,8 @@ function App() {
 
     const getCurrentLocationWeather = () => {
         axios.get(locationUrl).then((response) => {
-            setLocation(response.data);
-            getWeather(response.data);
+            setLocation(response.data.city);
+            getWeather(response.data.city);
         })
     }
 
@@ -112,12 +113,11 @@ function App() {
 
     return (
         <div className="app" style={{
-            backgroundImage: `url(${image})`,
+            backgroundImage: `url('${image}')`,
             backgroundPosition: 'center',
             backgroundSize: 'cover',
             backgroundRepeat: 'no-repeat',
             boxShadow: 'inset 0 0 0 1000px rgba(0, 0, 0, 0.4)'
-
         }}>
             <div className="search">
                 <div className="inputFavorite">
